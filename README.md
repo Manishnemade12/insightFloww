@@ -1,19 +1,19 @@
 # ⚡ InsightFlow AI
 
-> **Async AI summarization and caching engine** — Node.js · Redis / Valkey · Gemini · React
+> **Async AI summarization and caching engine** — Java 21 · Spring Boot 3.4 · Redis / Valkey · Gemini · React
 
-InsightFlow AI is a full-stack app that accepts text or URL input, queues work in Redis, processes summaries in a Node.js worker pool, and returns AI-generated summaries with tags.
+InsightFlow AI is a full-stack app that accepts text or URL input, queues work in Redis, processes summaries in a multi-threaded worker pool, and returns AI-generated summaries with tags.
 
 ## Overview
 
-The backend exposes a small REST API and a background worker loop. The frontend submits an input, polls for status, and shows summary results or cache hits. Redis / Valkey stores job state, queue entries, metrics, and cached summaries.
+The backend exposes a Spring Boot REST API and a multi-threaded queue worker pool. The frontend submits an input, polls for status, and shows summary results or cache hits. Redis / Valkey stores job state, queue entries, metrics, and cached summaries.
 
 ## Tech Stack
 
 | Layer | Technology |
 |-------|-----------|
-| Backend | Node.js 20+ · Express |
-| Queue + Cache | Redis 7+ / Valkey 8 · ioredis |
+| Backend | Java 21 · Spring Boot 3.4 (REST API, Redis Lettuce client, multi-worker pool) |
+| Queue + Cache | Redis 7+ / Valkey 8 · Spring Data Redis |
 | AI | Google Gemini 1.5 Flash via REST |
 | Frontend | React 19 · TypeScript · Vite 5 |
 
@@ -29,11 +29,18 @@ The backend exposes a small REST API and a background worker loop. The frontend 
 ## Local Setup
 
 ```bash
+# 1. Start Valkey / Redis
 docker compose up -d
+
+# 2. Configure Backend environment
 cp backend/.env.example backend/.env
+# Update GEMINI_API_KEY in backend/.env
+
+# 3. Start Spring Boot Backend
 cd backend
-npm install
-npm run dev
+./mvnw spring-boot:run
+# On Windows PowerShell:
+# .\mvnw.cmd spring-boot:run
 ```
 
 In a second terminal:

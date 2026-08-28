@@ -2,11 +2,11 @@
 
 ## Purpose
 
-InsightFlow AI is a single-service Node.js backend plus React frontend for async AI summarization. The design emphasizes queue-backed processing, Redis caching, and a simple API contract that can be polled from the UI.
+InsightFlow AI is a high-performance Java 21 Spring Boot backend plus React frontend for async AI summarization. The design emphasizes queue-backed processing, Redis caching, and a simple API contract that can be polled from the UI.
 
 ## Architecture
 
-Client -> Express API -> Redis / Valkey -> Worker pool -> Gemini -> Redis / Valkey -> Client
+Client -> Spring Boot REST API -> Redis / Valkey -> Worker pool (ExecutorService) -> Gemini -> Redis / Valkey -> Client
 
 ## Core Flow
 
@@ -21,7 +21,7 @@ Client -> Express API -> Redis / Valkey -> Worker pool -> Gemini -> Redis / Valk
 
 ### API Layer
 
-Express routes:
+Spring Boot `@RestController` routes:
 
 - `POST /api/submit`
 - `GET /api/status/:jobId`
@@ -30,16 +30,16 @@ Express routes:
 
 ### Redis Layer
 
-Redis / Valkey stores:
+Redis / Valkey stores (managed via Spring Data Redis):
 
 - `summary:{hash}` for cached AI results
 - `job:{id}` for job records
-- `job_queue` for pending work
+- `job_queue` for pending work (FIFO Redis list)
 - `metrics:*` for request and processing counters
 
 ### Worker Layer
 
-The worker pool uses a fixed number of loops. Each loop blocks on Redis with `BLPOP`, updates the job to `processing`, calls the processor, and writes the completed or failed state back to Redis.
+The worker pool uses a configurable fixed thread pool (`ExecutorService`). Each worker loop blocks on Redis with `BLPOP` (`leftPop` with timeout), updates the job to `processing`, calls the processor, and writes the completed or failed state back to Redis. Graceful shutdown is managed via Spring lifecycle (`@PreDestroy`).
 
 ### AI Layer
 

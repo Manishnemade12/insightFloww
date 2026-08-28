@@ -1,0 +1,25 @@
+server:
+  port: ${PORT:8080}
+
+spring:
+  application:
+    name: insightflow-backend
+  data:
+    redis:
+      url: ${REDIS_URL:redis://localhost:6379}
+      timeout: 10s
+
+insightflow:
+  app-name: "InsightFlow AI"
+  gemini-api-key: ${GEMINI_API_KEY:}
+  gemini-model: ${GEMINI_MODEL:gemini-1.5-flash}
+  worker-count: ${WORKER_COUNT:3}
+  cache-ttl-seconds: ${CACHE_TTL:300}
+  job-ttl-seconds: ${JOB_TTL_SECONDS:86400}
+  cors-origin: ${CORS_ORIGIN:http://localhost:5173}
+
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics
